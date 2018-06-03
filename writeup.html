@@ -1055,10 +1055,9 @@ body .markdown-body
 .codehilite .vi{color:teal}
 .codehilite .il{color:#009999}
 .codehilite .gc{color:#999;background-color:#EAF2F5}
-</style><title>writeup</title></head><body><article class="markdown-body"><h2 id="writeup-template">Writeup Template<a class="headerlink" href="#writeup-template" title="Permanent link"></a></h2>
-<h3 id="you-can-use-this-file-as-a-template-for-your-writeup-if-you-want-to-submit-it-as-a-markdown-file-but-feel-free-to-use-some-other-method-and-submit-a-pdf-if-you-prefer">You can use this file as a template for your writeup if you want to submit it as a markdown file, but feel free to use some other method and submit a pdf if you prefer.<a class="headerlink" href="#you-can-use-this-file-as-a-template-for-your-writeup-if-you-want-to-submit-it-as-a-markdown-file-but-feel-free-to-use-some-other-method-and-submit-a-pdf-if-you-prefer" title="Permanent link"></a></h3>
+</style><title>writeup</title></head><body><article class="markdown-body"><h1 id="advanced-lane-finding">Advanced Lane Finding<a class="headerlink" href="#advanced-lane-finding" title="Permanent link"></a></h1>
+<p>By Tyler Lewis</p>
 <hr />
-<p><strong>Advanced Lane Finding Project</strong></p>
 <p>The goals / steps of this project are the following:</p>
 <ul>
 <li>Compute the camera calibration matrix and distortion coefficients given a set of chessboard images.</li>
@@ -1074,71 +1073,66 @@ body .markdown-body
 <h3 id="here-i-will-consider-the-rubric-points-individually-and-describe-how-i-addressed-each-point-in-my-implementation">Here I will consider the rubric points individually and describe how I addressed each point in my implementation.<a class="headerlink" href="#here-i-will-consider-the-rubric-points-individually-and-describe-how-i-addressed-each-point-in-my-implementation" title="Permanent link"></a></h3>
 <hr />
 <h3 id="writeup-readme">Writeup / README<a class="headerlink" href="#writeup-readme" title="Permanent link"></a></h3>
-<h4 id="1-provide-a-writeup-readme-that-includes-all-the-rubric-points-and-how-you-addressed-each-one-you-can-submit-your-writeup-as-markdown-or-pdf-here-is-a-template-writeup-for-this-project-you-can-use-as-a-guide-and-a-starting-point">1. Provide a Writeup / README that includes all the rubric points and how you addressed each one.  You can submit your writeup as markdown or pdf.  <a href="https://github.com/udacity/CarND-Advanced-Lane-Lines/blob/master/writeup_template.md">Here</a> is a template writeup for this project you can use as a guide and a starting point.<a class="headerlink" href="#1-provide-a-writeup-readme-that-includes-all-the-rubric-points-and-how-you-addressed-each-one-you-can-submit-your-writeup-as-markdown-or-pdf-here-is-a-template-writeup-for-this-project-you-can-use-as-a-guide-and-a-starting-point" title="Permanent link"></a></h4>
-<p>You&rsquo;re reading it!</p>
 <h3 id="camera-calibration">Camera Calibration<a class="headerlink" href="#camera-calibration" title="Permanent link"></a></h3>
 <h4 id="1-briefly-state-how-you-computed-the-camera-matrix-and-distortion-coefficients-provide-an-example-of-a-distortion-corrected-calibration-image">1. Briefly state how you computed the camera matrix and distortion coefficients. Provide an example of a distortion corrected calibration image.<a class="headerlink" href="#1-briefly-state-how-you-computed-the-camera-matrix-and-distortion-coefficients-provide-an-example-of-a-distortion-corrected-calibration-image" title="Permanent link"></a></h4>
-<p>The code for this step is contained in the first code cell of the IPython notebook located in &ldquo;./examples/example.ipynb&rdquo; (or in lines # through # of the file called <code>some_file.py</code>).</p>
-<p>I start by preparing &ldquo;object points&rdquo;, which will be the (x, y, z) coordinates of the chessboard corners in the world. Here I am assuming the chessboard is fixed on the (x, y) plane at z=0, such that the object points are the same for each calibration image.  Thus, <code>objp</code> is just a replicated array of coordinates, and <code>objpoints</code> will be appended with a copy of it every time I successfully detect all chessboard corners in a test image.  <code>imgpoints</code> will be appended with the (x, y) pixel position of each of the corners in the image plane with each successful chessboard detection.</p>
-<p>I then used the output <code>objpoints</code> and <code>imgpoints</code> to compute the camera calibration and distortion coefficients using the <code>cv2.calibrateCamera()</code> function.  I applied this distortion correction to the test image using the <code>cv2.undistort()</code> function and obtained this result:</p>
+<p>The code for this step is contained under the bold &ldquo;Camera Calibration&rdquo; heading in the Jupyter Notebook <code>P4_advanced_lane_finding.ipynb</code></p>
+<p>Before we can start looking for lane lines, we need to undistort the images and videos.  Image distortion iscaused by the camera lense and can be corrected using some calibration images and some functions from the OpenCV library: <code>cv2.findChessboardCorners</code> and <code>cv2.calibrateCamera</code></p>
+<p>Several pictures of a chessboard, located in the folder &lsquo;camera_cal&rsquo;, were provided for this project to be used as calibration images.  The calibration images were taken using the same camera that the project test images and videos were taken with.</p>
+<p>Object points serve as real world coordinates of the corners of the chessboard.  Image points are detected using <code>cv2.findChessboardCorners</code> and indicate the position of the corneres as they appear in the distorted images.  These points are sent to the <code>cv2.calibrateCamera</code> function which returns matrix (&lsquo;mtx&rsquo;) and distortion (&lsquo;dist&rsquo;) coefficients.  These coefficients can then be used along with the function <code>cv2.undistort</code> to undistort images and videos later on in the project.</p>
+<p>An example of a distorted chessboard image is shown alongside its un-distorted counterpart below:</p>
 <p><img alt="alt text" src="/Users/ty/Udacity/T1/P4_advanced_lane_finding/examples/undistort_output.png" title="Undistorted" /></p>
 <h3 id="pipeline-single-images">Pipeline (single images)<a class="headerlink" href="#pipeline-single-images" title="Permanent link"></a></h3>
 <h4 id="1-provide-an-example-of-a-distortion-corrected-image">1. Provide an example of a distortion-corrected image.<a class="headerlink" href="#1-provide-an-example-of-a-distortion-corrected-image" title="Permanent link"></a></h4>
-<p>To demonstrate this step, I will describe how I apply the distortion correction to one of the test images like this one:
-<img alt="alt text" src="/Users/ty/Udacity/T1/P4_advanced_lane_finding/test_images/test1.jpg" title="Road Transformed" /></p>
+<p>The undistorted original image is shown below:</p>
+<p><img alt="alt text" src="/Users/ty/Udacity/T1/P4_advanced_lane_finding/test_images/test1.jpg" title="Road Transformed" /></p>
+<p>NOTE: The distortion in the original image is most noticeable near the edges of the image.</p>
 <h4 id="2-describe-how-and-identify-where-in-your-code-you-used-color-transforms-gradients-or-other-methods-to-create-a-thresholded-binary-image-provide-an-example-of-a-binary-image-result">2. Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.<a class="headerlink" href="#2-describe-how-and-identify-where-in-your-code-you-used-color-transforms-gradients-or-other-methods-to-create-a-thresholded-binary-image-provide-an-example-of-a-binary-image-result" title="Permanent link"></a></h4>
-<p>I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at lines # through # in <code>another_file.py</code>).  Here&rsquo;s an example of my output for this step.  (note: this is not actually from one of the test images)</p>
+<p>I used a combination of color and gradient thresholds to generate the binary image called &lsquo;combined_binary&rsquo; (8th cell of <code>P4_advanced_lane_finding.ipynb</code>).  Here are some example images of my output for this step:</p>
 <p><img alt="alt text" src="/Users/ty/Udacity/T1/P4_advanced_lane_finding/examples/binary_combo_example.jpg" title="Binary Example" /></p>
 <h4 id="3-describe-how-and-identify-where-in-your-code-you-performed-a-perspective-transform-and-provide-an-example-of-a-transformed-image">3. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.<a class="headerlink" href="#3-describe-how-and-identify-where-in-your-code-you-performed-a-perspective-transform-and-provide-an-example-of-a-transformed-image" title="Permanent link"></a></h4>
-<p>The code for my perspective transform includes a function called <code>warper()</code>, which appears in lines 1 through 8 in the file <code>example.py</code> (output_images/examples/example.py) (or, for example, in the 3rd code cell of the IPython notebook).  The <code>warper()</code> function takes as inputs an image (<code>img</code>), as well as source (<code>src</code>) and destination (<code>dst</code>) points.  I chose the hardcode the source and destination points in the following manner:</p>
-<div class="codehilite"><pre><span class="n">src</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span>
-    <span class="p">[[(</span><span class="n">img_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="mi">55</span><span class="p">,</span> <span class="n">img_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">100</span><span class="p">],</span>
-    <span class="p">[((</span><span class="n">img_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">6</span><span class="p">)</span> <span class="o">-</span> <span class="mi">10</span><span class="p">),</span> <span class="n">img_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
-    <span class="p">[(</span><span class="n">img_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">5</span> <span class="o">/</span> <span class="mi">6</span><span class="p">)</span> <span class="o">+</span> <span class="mi">60</span><span class="p">,</span> <span class="n">img_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
-    <span class="p">[(</span><span class="n">img_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">55</span><span class="p">),</span> <span class="n">img_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">100</span><span class="p">]])</span>
-<span class="n">dst</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span>
-    <span class="p">[[(</span><span class="n">img_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">4</span><span class="p">),</span> <span class="mi">0</span><span class="p">],</span>
-    <span class="p">[(</span><span class="n">img_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">4</span><span class="p">),</span> <span class="n">img_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
-    <span class="p">[(</span><span class="n">img_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">/</span> <span class="mi">4</span><span class="p">),</span> <span class="n">img_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
-    <span class="p">[(</span><span class="n">img_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">/</span> <span class="mi">4</span><span class="p">),</span> <span class="mi">0</span><span class="p">]])</span>
+<p>The <code>warp</code> function (7th cell of <code>P4_advanced_lane_finding.ipynb</code>) returns a &ldquo;birds-ey-view&rdquo; version of the input image.  The function re-maps a set of source (&lsquo;src&rsquo;) points to the destination (&lsquo;dst&rsquo;) points.  The source points correspond to the trapezoid verteces.  The source points are hard-coded in but are designed to be easily manipulated based on image dimensions and desired trapezoid position and size.</p>
+<div class="codehilite"><pre><span class="c1"># Define trapezoid dimensions</span>
+<span class="n">trap_height</span> <span class="o">=</span> <span class="mi">260</span>
+<span class="n">trap_top_width</span> <span class="o">=</span> <span class="mi">170</span>
+<span class="n">trap_base_width</span> <span class="o">=</span> <span class="n">img_w</span><span class="o">-</span><span class="mi">100</span>
+<span class="n">trap_bottom_cutoff</span> <span class="o">=</span> <span class="mi">40</span>
+<span class="n">trap_v_shift</span> <span class="o">=</span> <span class="mi">0</span>   <span class="c1"># positive --&gt; shifts entire trapezoid UP</span>
+<span class="n">trap_h_shift</span> <span class="o">=</span> <span class="mi">0</span>   <span class="c1"># positive --&gt; shifts entire trapezoid to the RIGHT</span>
+
+<span class="c1"># Store 4 trapezoid vertices in &#39;src&#39; (...starting with top left point going clockwise)</span>
+<span class="n">src</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span>
+    <span class="p">[[</span><span class="n">x_mid</span> <span class="o">+</span> <span class="n">trap_h_shift</span> <span class="o">-</span> <span class="n">trap_top_width</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">img_h</span> <span class="o">-</span> <span class="n">trap_v_shift</span> <span class="o">-</span> <span class="n">trap_height</span><span class="p">],</span>
+     <span class="p">[</span><span class="n">x_mid</span> <span class="o">+</span> <span class="n">trap_h_shift</span> <span class="o">+</span> <span class="n">trap_top_width</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">img_h</span> <span class="o">-</span> <span class="n">trap_v_shift</span> <span class="o">-</span> <span class="n">trap_height</span><span class="p">],</span>
+     <span class="p">[</span><span class="n">x_mid</span> <span class="o">+</span> <span class="n">trap_h_shift</span> <span class="o">+</span> <span class="n">trap_base_width</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">img_h</span> <span class="o">-</span> <span class="n">trap_v_shift</span> <span class="o">-</span> <span class="n">trap_bottom_cutoff</span><span class="p">],</span>
+     <span class="p">[</span><span class="n">x_mid</span> <span class="o">+</span> <span class="n">trap_h_shift</span> <span class="o">-</span> <span class="n">trap_base_width</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">img_h</span> <span class="o">-</span> <span class="n">trap_v_shift</span> <span class="o">-</span> <span class="n">trap_bottom_cutoff</span><span class="p">]])</span>
+
+<span class="c1"># The 4 points from &#39;src&#39; will be mapped to these 4 points</span>
+<span class="c1"># NOTE: &#39;offset&#39; is the padding added to the left and right sides of the warped image</span>
+<span class="n">top_offset</span> <span class="o">=</span> <span class="mi">200</span>
+<span class="n">base_offset</span> <span class="o">=</span> <span class="n">top_offset</span> <span class="o">-</span> <span class="mi">60</span>
+<span class="n">img_size</span> <span class="o">=</span> <span class="p">(</span><span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span><span class="p">)</span>
+
+<span class="c1"># The 4 trapezoid vertices will be remapped to these &#39;dst&#39; points</span>
+<span class="n">dst</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">([[</span><span class="n">top_offset</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                  <span class="p">[</span><span class="n">img_w</span><span class="o">-</span><span class="n">top_offset</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                  <span class="p">[</span><span class="n">img_w</span><span class="o">-</span><span class="n">base_offset</span><span class="p">,</span> <span class="n">img_h</span><span class="p">],</span>
+                  <span class="p">[</span><span class="n">base_offset</span><span class="p">,</span> <span class="n">img_h</span><span class="p">]])</span>
 </pre></div>
 
-<p>This resulted in the following source and destination points:</p>
-<table>
-<thead>
-<tr>
-<th align="center">Source</th>
-<th align="center">Destination</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="center">585, 460</td>
-<td align="center">320, 0</td>
-</tr>
-<tr>
-<td align="center">203, 720</td>
-<td align="center">320, 720</td>
-</tr>
-<tr>
-<td align="center">1127, 720</td>
-<td align="center">960, 720</td>
-</tr>
-<tr>
-<td align="center">695, 460</td>
-<td align="center">960, 0</td>
-</tr>
-</tbody>
-</table>
-<p>I verified that my perspective transform was working as expected by drawing the <code>src</code> and <code>dst</code> points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image.</p>
+<p>The result of the <code>warp</code> function is shown below:</p>
 <p><img alt="alt text" src="/Users/ty/Udacity/T1/P4_advanced_lane_finding/examples/warped_straight_lines.jpg" title="Warp Example" /></p>
-<h4 id="4-describe-how-and-identify-where-in-your-code-you-identified-lane-line-pixels-and-fit-their-positions-with-a-polynomial">4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?<a class="headerlink" href="#4-describe-how-and-identify-where-in-your-code-you-identified-lane-line-pixels-and-fit-their-positions-with-a-polynomial" title="Permanent link"></a></h4>
-<p>Then I did some other stuff and fit my lane lines with a 2nd order polynomial kinda like this:</p>
+<h4 id="4-describe-how-and-identify-where-in-your-code-you-identified-lane-line-pixels-and-fit-their-positions-with-a-polynomial">4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial.<a class="headerlink" href="#4-describe-how-and-identify-where-in-your-code-you-identified-lane-line-pixels-and-fit-their-positions-with-a-polynomial" title="Permanent link"></a></h4>
+<p>There were two search functions used to determine which of the pixels in &lsquo;combined_binary&rsquo; belonged to lane lines: window_search and &lsquo;proximity_search&rsquo;.  &lsquo;window_search&rsquo; was only used for the very first frame in the video.  All other frames used &lsquo;proximity_search&rsquo; to find the lane line points.</p>
+<p>To perform a window search, a histogram must first be created using the &lsquo;make_histogram&rsquo; function (9th cell of <code>P4_advanced_lane_finding.ipynb</code>).  An example histogram is shown below:</p>
+<p><img alt="alt text" src="/Users/ty/Udacity/T1/P4_advanced_lane_finding/examples/color_fit_lines.jpg" title="Fit Visual" /></p>
+<p>The &lsquo;window_search&rsquo; function (10th cell of <code>P4_advanced_lane_finding.ipynb</code>) was used to create the image above.  The windows stack vertically from the bottom, starting at the left and right histogram peak x-coordinates, and re-centering themselves on the lane each time.  Once all of the windows have been created, the points that are contained within the windows are used to fit a 2nd-order polynomial curve.  (Two independent curves are created; one for the left set of points and one for the right set of points.)</p>
+<p><img alt="alt text" src="/Users/ty/Udacity/T1/P4_advanced_lane_finding/examples/color_fit_lines.jpg" title="Fit Visual" /></p>
+<p>The &lsquo;proximity_search&rsquo; function (11th cell of <code>P4_advanced_lane_finding.ipynb</code>) is used for every frame other than the first frame.  The previous frame&rsquo;s two fitted polynomial curves are used to create &ldquo;proximity zones&rdquo;.  The points from the current frame&rsquo;s image that lay within the proximity zones are collected and two new polynomial curves are fit to these points. The proximity zones are the two thick green areas shown below:</p>
 <p><img alt="alt text" src="/Users/ty/Udacity/T1/P4_advanced_lane_finding/examples/color_fit_lines.jpg" title="Fit Visual" /></p>
 <h4 id="5-describe-how-and-identify-where-in-your-code-you-calculated-the-radius-of-curvature-of-the-lane-and-the-position-of-the-vehicle-with-respect-to-center">5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.<a class="headerlink" href="#5-describe-how-and-identify-where-in-your-code-you-calculated-the-radius-of-curvature-of-the-lane-and-the-position-of-the-vehicle-with-respect-to-center" title="Permanent link"></a></h4>
-<p>I did this in lines # through # in my code in <code>my_other_file.py</code></p>
+<p>The radius of curvature (&lsquo;avg_curverad&rsquo;) and vehicle&rsquo;s distance from center (&lsquo;distance_from_center&rsquo;) were calculated inside the &lsquo;window_search&rsquo; and &lsquo;proximity_search&rsquo; functions.  The radius of curvature was averaged over several frames to produce a more accurate and less &lsquo;jumpy&rsquo; result.  The distance from center was calculated by looking at the left and right line polynomial curves&rsquo; x-intercept positions on the bottom edge of the image.  A &lsquo;dfc_correction_factor&rsquo; was added and can be used to calibrate the position of the vehicle relative to the camera if the camera is not mounted perfectly in the center of the vehicle.</p>
 <h4 id="6-provide-an-example-image-of-your-result-plotted-back-down-onto-the-road-such-that-the-lane-area-is-identified-clearly">6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.<a class="headerlink" href="#6-provide-an-example-image-of-your-result-plotted-back-down-onto-the-road-such-that-the-lane-area-is-identified-clearly" title="Permanent link"></a></h4>
-<p>I implemented this step in lines # through # in my code in <code>yet_another_file.py</code> in the function <code>map_lane()</code>.  Here is an example of my result on a test image:</p>
+<p>The area between the two polynomial curves is filled in with the color green using the <code>cv2.fillPoly</code> function (12th cell of <code>P4_advanced_lane_finding.ipynb</code>).  The filled polygon is warped back to the original position and the radius of curvature and the vehicle distance from center information are added to produce the final image of the pipeline:</p>
 <p><img alt="alt text" src="/Users/ty/Udacity/T1/P4_advanced_lane_finding/examples/example_output.jpg" title="Output" /></p>
 <hr />
 <h3 id="pipeline-video">Pipeline (video)<a class="headerlink" href="#pipeline-video" title="Permanent link"></a></h3>
@@ -1147,4 +1141,8 @@ body .markdown-body
 <hr />
 <h3 id="discussion">Discussion<a class="headerlink" href="#discussion" title="Permanent link"></a></h3>
 <h4 id="1-briefly-discuss-any-problems-issues-you-faced-in-your-implementation-of-this-project-where-will-your-pipeline-likely-fail-what-could-you-do-to-make-it-more-robust">1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?<a class="headerlink" href="#1-briefly-discuss-any-problems-issues-you-faced-in-your-implementation-of-this-project-where-will-your-pipeline-likely-fail-what-could-you-do-to-make-it-more-robust" title="Permanent link"></a></h4>
-<p>Here I&rsquo;ll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.</p></article></body></html>
+<p>Some problems I faced while working on this project were mainly due to the color and gradient thresholding step.  The portions of the road that are heavily shaded or very lightly colored would cause the color_and_gradient_mask function (Lines # through # of 2nd cell in <code>P4_advanced_lane_finding.ipynb</code>) to fail.  The function would collect noise from the shadowy areas which would cause the search functions to produce poor polynomial curve fits.</p>
+<p>I tried to impolement some basic lane detection failure criteria to help filter out poor search results.  If the search function returned a polynomial that was too &ldquo;curvy&rdquo; to be a lane line, the curve was discarded and the curve from the previous frame was used.  Also, if any portion of the left lane curve crossed over into the right half of the image, or any portion of the right lane curve crossed over into the left half of the image, the curves would bediscarded and replaced with the previous frame&rsquo;s curves.  The curves were also averaged over three frames to reduce drastic jumps in position from frame to frame due to noise.</p>
+<p>To improve the pipeline, I might consider measuring the change in curve location from frame to frame.  If the location of the curve is drastically different from the previous frame&rsquo;s curve location, then the current frame&rsquo;s curve is probably incorrect and should be discarded.</p>
+<p>Another improvement that could be made is to add more color thresholds from different color spaces.  (I could use several &ldquo;strict&rdquo; color filters instead of just a couple &ldquo;lenient&rdquo; color filters).  An &ldquo;auto-thresholding&rdquo; or image normalization step might also help.</p>
+<p>Finally, a &ldquo;robustness&rdquo; attribute could be added to each polynomial curve fit.  Similarity to the previous frame&rsquo;s line shape, location, and haveing a high number of points detected in the search function would yield a higher &ldquo;robustness&rdquo; score.  The robustness could then be used to weigh each line appropriately and produce a wieghted average polynomial curve.</p></article></body></html>
