@@ -16,12 +16,15 @@ The goals / steps of this project are the following:
 
 [//]: # (Image References)
 
-[image1]: ./examples/undistort_output.png "Undistorted"
-[image2]: ./output_images/straight_lines1/1_undistorted_image.jpg "Undistorted Road"
-[image3]: /output_images/straight_lines1/color_binary.jpg "Binary Example"
-[image4]: ./examples/warped_straight_lines.jpg "Warp Example"
-[image5]: ./examples/color_fit_lines.jpg "Fit Visual"
-[image6]: ./examples/example_output.jpg "Output"
+[chessboards]: ./examples/undistort_output.png "Distorted and Undistorted Chessboards"
+[undistorted]: ./pipeline_test_image_output/1_undistorted.jpg "Original and Undistorted"
+[color_and_gradient]: ./pipeline_test_image_output/3_color_binary.jpg "Color Binary and Combined Binary"
+[warped]: ./pipeline_test_image_output/2_warped.jpg "Trapezoid and Warped"
+[histogram]: ./pipeline_test_image_output/5_histogram.jpg "Histogram"
+[window_search]: ./pipeline_test_image_output/6_window_search.jpg "Window Search"
+[proximity_search]: ./pipeline_test_image_output/7_proximity_search.jpg "Proximity Search"
+[final]: ./pipeline_test_image_output/11_final.jpg "Final Image"
+
 [video1]: ./project_video.mp4 "Video"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
@@ -48,7 +51,7 @@ Object points serve as real world coordinates of the corners of the chessboard. 
 
 An example of a distorted chessboard image is shown alongside its un-distorted counterpart below:
 
-![alt text][image1]
+![alt text][chessboards]
 
 
 ### Pipeline (single images)
@@ -57,7 +60,7 @@ An example of a distorted chessboard image is shown alongside its un-distorted c
 
 The undistorted original image is shown below:
 
-![alt text][image2]
+![alt text][undistorted]
 
 NOTE: The distortion in the original image is most noticeable near the edges of the image.
 
@@ -66,7 +69,7 @@ NOTE: The distortion in the original image is most noticeable near the edges of 
 
 I used a combination of color and gradient thresholds to generate the binary image called 'combined_binary' (8th cell of `P4_advanced_lane_finding.ipynb`).  Here are some example images of my output for this step:
 
-![alt text][image3]
+![alt text][color_and_gradient]
 
 
 #### 3. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
@@ -104,7 +107,7 @@ dst = np.float32([[top_offset, 0],
 
 The result of the `warp` function is shown below:
 
-![alt text][image4]
+![alt text][warped]
 
 #### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial.
 
@@ -112,16 +115,16 @@ There were two search functions used to determine which of the pixels in 'combin
 
 To perform a window search, a histogram must first be created using the 'make_histogram' function (9th cell of `P4_advanced_lane_finding.ipynb`).  An example histogram is shown below:
 
-![alt text][image5]
+![alt text][histogram]
 
 The 'window_search' function (10th cell of `P4_advanced_lane_finding.ipynb`) was used to create the image above.  The windows stack vertically from the bottom, starting at the left and right histogram peak x-coordinates, and re-centering themselves on the lane each time.  Once all of the windows have been created, the points that are contained within the windows are used to fit a 2nd-order polynomial curve.  (Two independent curves are created; one for the left set of points and one for the right set of points.)
 
 
-![alt text][image5]
+![alt text][window_search]
 
 The 'proximity_search' function (11th cell of `P4_advanced_lane_finding.ipynb`) is used for every frame other than the first frame.  The previous frame's two fitted polynomial curves are used to create "proximity zones".  The points from the current frame's image that lay within the proximity zones are collected and two new polynomial curves are fit to these points. The proximity zones are the two thick green areas shown below:
 
-![alt text][image5]
+![alt text][proximity_search]
 
 
 #### 5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
@@ -133,7 +136,7 @@ The radius of curvature ('avg_curverad') and vehicle's distance from center ('di
 
 The area between the two polynomial curves is filled in with the color green using the `cv2.fillPoly` function (12th cell of `P4_advanced_lane_finding.ipynb`).  The filled polygon is warped back to the original position and the radius of curvature and the vehicle distance from center information are added to produce the final image of the pipeline:
 
-![alt text][image6]
+![alt text][final]
 
 ---
 
